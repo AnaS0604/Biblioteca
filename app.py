@@ -13,6 +13,8 @@ import socket
 import threading
 import unicodedata
 import webbrowser
+import os
+import shutil
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, request
@@ -60,7 +62,14 @@ ESTANTES = [[l for l in ORDENADOS if pasillo_de(norm(l[0])[0]) == i] for i in ra
 
 
 # ------------------------------------------------------------ préstamos
-ARCHIVO_PRESTAMOS = Path(__file__).with_name("prestamos.json")
+ARCHIVO_BASE = Path(__file__).with_name("prestamos.json")
+if os.environ.get("VERCEL"):
+    ARCHIVO_PRESTAMOS = Path("/tmp/prestamos.json")
+    if not ARCHIVO_PRESTAMOS.exists() and ARCHIVO_BASE.exists():
+        shutil.copyfile(ARCHIVO_BASE, ARCHIVO_PRESTAMOS)
+else:
+    ARCHIVO_PRESTAMOS = ARCHIVO_BASE
+
 _candado = threading.Lock()
 
 
